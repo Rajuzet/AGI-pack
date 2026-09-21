@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "agi-synapse.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "agi-synapse.labels" . | nindent 4 }}
+data:
+  # Environment
+  APP_ENV: {{ .Values.global.environment | quote }}
+  LOG_LEVEL: {{ .Values.serving.env.logLevel | default "INFO" | quote }}
+
+  # Model & Checkpoint Serving
+  BASE_MODEL_ID: {{ .Values.serving.env.baseModelId | quote }}
+  ADAPTER_GCS_PREFIX: {{ .Values.serving.env.adapterGcsPrefix | quote }}
+  GCS_BUCKET_NAME: {{ .Values.serving.env.gcsBucketName | quote }}
+  SERVING_HOST: {{ .Values.serving.env.host | quote }}
+  SERVING_PORT: {{ .Values.serving.env.port | quote }}
+
+  # Daemon Harvesting & Vector Indexing
+  POLL_INTERVAL_SECONDS: {{ .Values.daemon.pollIntervalSeconds | quote }}
+  MAX_RECORDS_PER_POLL: {{ .Values.daemon.maxRecordsPerPoll | quote }}
+  DAEMON_METRICS_PORT: {{ .Values.daemon.metricsPort | quote }}
+  ARXIV_CATEGORIES: {{ join "," .Values.daemon.arxivCategories | quote }}
+
+  # Relational Database Connections
+  MYSQL_HOST: {{ .Values.mysql.host | quote }}
+  MYSQL_PORT: {{ .Values.mysql.port | quote }}
+  MYSQL_DATABASE: {{ .Values.mysql.database | quote }}
+  MYSQL_USER: {{ .Values.mysql.user | quote }}
+  MYSQL_POOL_SIZE: {{ .Values.mysql.poolSize | quote }}

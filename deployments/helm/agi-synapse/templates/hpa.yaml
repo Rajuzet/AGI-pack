@@ -1,0 +1,68 @@
+{{- if .Values.hpa.enabled -}}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "agi-synapse.fullname" . }}-serving-hpa
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "agi-synapse.labels" . | nindent 4 }}
+    app.kubernetes.io/component: serving
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "agi-synapse.fullname" . }}-serving
+  minReplicas: {{ .Values.hpa.minReplicas }}
+  maxReplicas: {{ .Values.hpa.maxReplicas }}
+  metrics:
+    {{- if .Values.hpa.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.hpa.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.hpa.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.hpa.targetMemoryUtilizationPercentage }}
+    {{- end }}
+    {{- if and .Values.hpa.customMetrics .Values.hpa.customMetrics.enabled }}
+    - type: Pods
+      pods:
+        metric:
+          name: agi_serving_ttft_seconds
+        target:
+          type: AverageValue
+          averageValue: {{ .Values.hpa.customMetrics.targetLatencySeconds | default 0.25 }}
+    - type: Pods
+      pods:
+        metric:
+          name: agi_serving_active_requests
+        target:
+          type: AverageValue
+          averageValue: {{ .Values.hpa.customMetrics.targetConcurrencyPerPod | default 15 }}
+    {{- end }}
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 2
+          periodSeconds: 15
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+      selectPolicy: Min
+{{- end }}

@@ -1,0 +1,23 @@
+apiVersion: v2
+name: agi-synapse
+description: Enterprise Cloud-Native Kubernetes Helm Chart for Project Synapse (Autonomous Stream Ingestion, Persistent Vector Memory & LoRA Serving)
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - agi
+  - autonomous-agent
+  - machine-learning
+  - faiss
+  - lora
+  - fastapi
+  - prometheus
+home: https://github.com/Rajuzet/AGI-pack
+sources:
+  - https://github.com/Rajuzet/AGI-pack
+maintainers:
+  - name: Principal AI Systems Reliability Engineer
+    email: infrastructure@project-synapse.cloud
+annotations:
+  artifacthub.io/category: machine-learning
+  artifacthub.io/prerelease: "false"

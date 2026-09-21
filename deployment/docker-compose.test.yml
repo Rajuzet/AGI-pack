@@ -1,0 +1,128 @@
+version: "3.8"
+
+networks:
+  agi-test-network:
+    driver: bridge
+
+services:
+  # ===========================================================================
+  # 1. Ephemeral Relational Database for Smoke & Integration Testing
+  # Uses tmpfs in-memory storage to prevent persistent disk side-effects
+  # ===========================================================================
+  agi-mysql:
+    image: mysql:8.0
+    container_name: agi-mysql-test
+    restart: "no"
+    networks:
+      - agi-test-network
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-test_root_secure}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-agi_memory}
+    ports:
+      - "3307:3306"
+    tmpfs:
+      - /var/lib/mysql
+    volumes:
+      - ../storage/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+      start_period: 10s
+
+  # ===========================================================================
+  # 2. Ephemeral Model Serving Microservice (FastAPI + CPU/Fallback Mode)
+  # Pre-warmed for test environment without requiring physical GPU
+  # ===========================================================================
+  agi-serving:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    container_name: agi-serving-test
+    restart: "no"
+    networks:
+      - agi-test-network
+    environment:
+      SERVING_HOST: 0.0.0.0
+      SERVING_PORT: 8000
+      SERVING_MODEL_ID: Qwen/Qwen2.5-7B-Instruct
+      SERVING_GCS_ADAPTER_PREFIX: models/lora_checkpoints/latest
+      GCS_BUCKET_NAME: agi-agent-test-bucket
+      GCS_CREDENTIALS_PATH: ""
+      MYSQL_HOST: agi-mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-test_root_secure}
+      MYSQL_DATABASE: agi_memory
+    ports:
+      - "8001:8000"
+    depends_on:
+      agi-mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+
+  # ===========================================================================
+  # 3. Ephemeral Continuous Ingestion Daemon (Single-Cycle Run-Once Mode)
+  # Executes atomic harvesting, deduplication against MySQL, FAISS indexing, and exits
+  # ===========================================================================
+  agi-daemon:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    container_name: agi-daemon-test
+    restart: "no"
+    networks:
+      - agi-test-network
+    command: ["python3", "-m", "daemon.continuous_ingest", "--daemon-once"]
+    environment:
+      DAEMON_POLL_INTERVAL: 60
+      DAEMON_MAX_RECORDS_PER_POLL: 5
+      GCS_BUCKET_NAME: agi-agent-test-bucket
+      GCS_CREDENTIALS_PATH: ""
+      MYSQL_HOST: agi-mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-test_root_secure}
+      MYSQL_DATABASE: agi_memory
+    depends_on:
+      agi-mysql:
+        condition: service_healthy
+      agi-serving:
+        condition: service_healthy
+
+  # ===========================================================================
+  # 4. In-Network Smoke Test & Integration Test Runner
+  # Executes the complete test suite against live container endpoints
+  # ===========================================================================
+  agi-smoke-test:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    container_name: agi-smoke-test-runner
+    restart: "no"
+    networks:
+      - agi-test-network
+    volumes:
+      - ../tests:/app/tests:ro
+      - ../benchmarks:/app/benchmarks:ro
+    command: ["pytest", "tests/", "-v", "--durations=10"]
+    environment:
+      SERVING_HOST: agi-serving
+      SERVING_PORT: 8000
+      MYSQL_HOST: agi-mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-test_root_secure}
+      MYSQL_DATABASE: agi_memory
+      GCS_BUCKET_NAME: agi-agent-test-bucket
+    depends_on:
+      agi-mysql:
+        condition: service_healthy
+      agi-serving:
+        condition: service_healthy

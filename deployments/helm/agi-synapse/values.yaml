@@ -1,0 +1,199 @@
+# =============================================================================
+# Project Synapse: Helm Chart Production Configuration Values
+# =============================================================================
+
+global:
+  environment: production
+  imagePullSecrets: []
+  workloadIdentity:
+    enabled: true
+    gcpServiceAccount: "agi-agent-workload-identity@agi-cloud-prod.iam.gserviceaccount.com"
+
+# -----------------------------------------------------------------------------
+# 1. Service Account & Security Context
+# -----------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  name: "agi-synapse-sa"
+  annotations:
+    iam.gke.io/gcp-service-account: "agi-agent-workload-identity@agi-cloud-prod.iam.gserviceaccount.com"
+
+securityContext:
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  runAsNonRoot: true
+
+# -----------------------------------------------------------------------------
+# 2. FastAPI Model Serving Microservice (agi-serving)
+# -----------------------------------------------------------------------------
+serving:
+  replicaCount: 2
+
+  image:
+    repository: "ghcr.io/rajuzet/agi-serving"
+    tag: "v1.0.0"
+    pullPolicy: "IfNotPresent"
+
+  env:
+    host: "0.0.0.0"
+    port: 8000
+    baseModelId: "Qwen/Qwen2.5-7B-Instruct"
+    adapterGcsPrefix: "models/lora_checkpoints/latest"
+    gcsBucketName: "agi-agent-ingestion-data"
+    logLevel: "INFO"
+
+  resources:
+    limits:
+      cpu: "4000m"
+      memory: "16Gi"
+      nvidia.com/gpu: 1
+    requests:
+      cpu: "2000m"
+      memory: "8Gi"
+      nvidia.com/gpu: 1
+
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+  probes:
+    liveness:
+      path: "/health"
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readiness:
+      path: "/health"
+      initialDelaySeconds: 15
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 2
+
+  nodeSelector:
+    cloud.google.com/gke-accelerator: "nvidia-tesla-t4"
+
+  tolerations:
+    - key: "nvidia.com/gpu"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+# -----------------------------------------------------------------------------
+# 3. Continuous Ingestion & Vector Memory Daemon (agi-daemon)
+# -----------------------------------------------------------------------------
+daemon:
+  replicaCount: 1
+
+  image:
+    repository: "ghcr.io/rajuzet/agi-daemon"
+    tag: "v1.0.0"
+    pullPolicy: "IfNotPresent"
+
+  pollIntervalSeconds: 300
+  maxRecordsPerPoll: 45
+  metricsPort: 9090
+  arxivCategories:
+    - "cs.AI"
+    - "cs.LG"
+    - "stat.ML"
+
+  resources:
+    limits:
+      cpu: "2000m"
+      memory: "4Gi"
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+
+  persistence:
+    enabled: true
+    storageClass: "standard-rwo"
+    accessMode: "ReadWriteOnce"
+    size: "20Gi"
+    mountPath: "/app/data_memory"
+
+# -----------------------------------------------------------------------------
+# 4. Relational Memory & Audit Storage (MySQL)
+# -----------------------------------------------------------------------------
+mysql:
+  host: "agi-mysql.default.svc.cluster.local"
+  port: 3306
+  database: "agi_memory"
+  user: "root"
+  existingSecret: "agi-mysql-credentials"
+  secretKeys:
+    passwordKey: "mysql-root-password"
+  poolSize: 10
+
+# -----------------------------------------------------------------------------
+# 5. Service Definition (Multi-Port ClusterIP / LoadBalancer)
+# -----------------------------------------------------------------------------
+service:
+  type: ClusterIP
+  ports:
+    serving:
+      port: 8000
+      targetPort: 8000
+      name: "http-serving"
+    daemonMetrics:
+      port: 9090
+      targetPort: 9090
+      name: "metrics-daemon"
+    prometheus:
+      port: 9091
+      targetPort: 9090
+      name: "metrics-prom"
+
+# -----------------------------------------------------------------------------
+# 6. Ingress Routing
+# -----------------------------------------------------------------------------
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "128m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+  hosts:
+    - host: "api.synapse.internal"
+      paths:
+        - path: "/v1"
+          pathType: Prefix
+          port: 8000
+        - path: "/health"
+          pathType: Exact
+          port: 8000
+        - path: "/metrics"
+          pathType: Exact
+          port: 8000
+  tls:
+    - secretName: "synapse-api-tls"
+      hosts:
+        - "api.synapse.internal"
+
+# -----------------------------------------------------------------------------
+# 7. Horizontal Pod Autoscaler (HPA v2)
+# -----------------------------------------------------------------------------
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 8
+  targetCPUUtilizationPercentage: 75
+  targetMemoryUtilizationPercentage: 80
+  customMetrics:
+    enabled: true
+    targetLatencySeconds: 0.250
+    targetConcurrencyPerPod: 15
+
+# -----------------------------------------------------------------------------
+# 8. Prometheus Monitoring Integration
+# -----------------------------------------------------------------------------
+monitoring:
+  serviceMonitor:
+    enabled: true
+    interval: "10s"
+    scrapeTimeout: "5s"
+    labels:
+      release: "prometheus-stack"

@@ -1,0 +1,25 @@
+# Prometheus Monitoring Configuration for AGI Autonomous Agent Platform
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  # 1. FastAPI Model Serving Microservice
+  - job_name: "agi-serving"
+    metrics_path: "/metrics"
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["agi-serving:8000"]
+        labels:
+          service: "model-serving"
+          environment: "production"
+
+  # 2. Continuous Ingestion & Harvesting Daemon
+  - job_name: "agi-daemon"
+    metrics_path: "/metrics"
+    scrape_interval: 10s
+    static_configs:
+      - targets: ["agi-daemon:9090"]
+        labels:
+          service: "continuous-ingestion"
+          environment: "production"

@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "agi-synapse.fullname" . }}-serving
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "agi-synapse.labels" . | nindent 4 }}
+    app.kubernetes.io/component: serving
+spec:
+  replicas: {{ .Values.serving.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{ .Values.serving.rollingUpdate.maxSurge | default 1 }}
+      maxUnavailable: {{ .Values.serving.rollingUpdate.maxUnavailable | default 0 }}
+  selector:
+    matchLabels:
+      {{- include "agi-synapse.servingSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "agi-synapse.servingSelectorLabels" . | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8000"
+    spec:
+      serviceAccountName: {{ include "agi-synapse.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.securityContext | nindent 8 }}
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: agi-serving
+          image: "{{ .Values.serving.image.repository }}:{{ .Values.serving.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.serving.image.pullPolicy }}
+          command:
+            - "python"
+            - "-m"
+            - "uvicorn"
+            - "serving.app:app"
+            - "--host"
+            - "0.0.0.0"
+            - "--port"
+            - "8000"
+          ports:
+            - name: http-serving
+              containerPort: 8000
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "agi-synapse.fullname" . }}-config
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mysql.existingSecret | default (printf "%s-secret" (include "agi-synapse.fullname" .)) }}
+                  key: {{ .Values.mysql.secretKeys.passwordKey | default "mysql-root-password" }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.serving.probes.liveness.path }}
+              port: http-serving
+            initialDelaySeconds: {{ .Values.serving.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.serving.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.serving.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.serving.probes.liveness.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.serving.probes.readiness.path }}
+              port: http-serving
+            initialDelaySeconds: {{ .Values.serving.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.serving.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.serving.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.serving.probes.readiness.failureThreshold }}
+          resources:
+            {{- toYaml .Values.serving.resources | nindent 12 }}
+      {{- with .Values.serving.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.serving.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

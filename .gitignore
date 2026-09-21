@@ -1,0 +1,43 @@
+# Python bytecode & cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# Secrets & Environment Credentials
+.env
+.env.*
+!.env.example
+secrets/*
+!secrets/service-account.json.example
+!secrets/.gitkeep
+
+# Local Vector Memory & Binary Artifacts
+data_memory/*.faiss
+data_memory/metadata.json
+data_staging/*.jsonl
+data_staging/adapters/
+data_storage/local_lake/
+model_checkpoints/
+
+# Helm & CI/CD Temporary Packaging Outputs
+.cr-release-packages/
+*.tgz
+rendered_manifest.yaml
+
+# Temporary & Log files
+*.tmp
+*.log
+*.swp
+*.bak
+.DS_Store
+Thumbs.db

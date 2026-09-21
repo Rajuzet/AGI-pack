@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "agi-synapse.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "agi-synapse.labels" . | nindent 4 }}
+    app.kubernetes.io/component: serving
+spec:
+  type: {{ .Values.service.type | default "ClusterIP" }}
+  ports:
+    - name: {{ .Values.service.ports.serving.name | default "http-serving" }}
+      port: {{ .Values.service.ports.serving.port | default 8000 }}
+      targetPort: {{ .Values.service.ports.serving.targetPort | default 8000 }}
+      protocol: TCP
+  selector:
+    {{- include "agi-synapse.servingSelectorLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "agi-synapse.fullname" . }}-daemon
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "agi-synapse.labels" . | nindent 4 }}
+    app.kubernetes.io/component: daemon
+spec:
+  type: ClusterIP
+  ports:
+    - name: {{ .Values.service.ports.daemonMetrics.name | default "metrics-daemon" }}
+      port: {{ .Values.service.ports.daemonMetrics.port | default 9090 }}
+      targetPort: {{ .Values.service.ports.daemonMetrics.targetPort | default 9090 }}
+      protocol: TCP
+    - name: {{ .Values.service.ports.prometheus.name | default "metrics-prom" }}
+      port: {{ .Values.service.ports.prometheus.port | default 9091 }}
+      targetPort: {{ .Values.service.ports.prometheus.targetPort | default 9090 }}
+      protocol: TCP
+  selector:
+    {{- include "agi-synapse.daemonSelectorLabels" . | nindent 4 }}

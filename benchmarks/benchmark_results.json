@@ -1,0 +1,109 @@
+{
+  "timestamp": "2026-09-21T16:38:15.173864+00:00",
+  "inference_concurrency_benchmark": {
+    "concurrency_5": {
+      "concurrency": 5,
+      "total_requests": 5,
+      "successful_requests": 5,
+      "failed_requests": 0,
+      "wall_clock_duration_sec": 0.335,
+      "aggregate_tps": 611.48,
+      "total_tokens_generated": 205,
+      "ttft_percentiles_sec": {
+        "min": 0.1293,
+        "mean": 0.14,
+        "p50": 0.1406,
+        "p95": 0.1496,
+        "p99": 0.1496,
+        "max": 0.1496
+      },
+      "latency_percentiles_sec": {
+        "min": 0.2189,
+        "mean": 0.2255,
+        "p50": 0.2262,
+        "p95": 0.2294,
+        "p99": 0.2294,
+        "max": 0.2294
+      },
+      "tps_stats": {
+        "min": 178.76,
+        "mean": 181.838,
+        "p50": 181.22,
+        "p95": 187.29,
+        "p99": 187.29,
+        "max": 187.29
+      },
+      "memory_metrics": {
+        "ram_baseline_mb": 391.68,
+        "ram_peak_mb": 374.49,
+        "ram_delta_mb": -17.19,
+        "vram_baseline_mb": 0.0,
+        "vram_peak_mb": 0.0,
+        "vram_delta_mb": 0.0
+      }
+    },
+    "concurrency_10": {
+      "concurrency": 10,
+      "total_requests": 10,
+      "successful_requests": 10,
+      "failed_requests": 0,
+      "wall_clock_duration_sec": 0.426,
+      "aggregate_tps": 962.17,
+      "total_tokens_generated": 410,
+      "ttft_percentiles_sec": {
+        "min": 0.0942,
+        "mean": 0.1283,
+        "p50": 0.1328,
+        "p95": 0.1666,
+        "p99": 0.1666,
+        "max": 0.1666
+      },
+      "latency_percentiles_sec": {
+        "min": 0.2084,
+        "mean": 0.2673,
+        "p50": 0.2819,
+        "p95": 0.3164,
+        "p99": 0.3164,
+        "max": 0.3164
+      },
+      "tps_stats": {
+        "min": 129.59,
+        "mean": 156.54,
+        "p50": 145.405,
+        "p95": 196.77,
+        "p99": 196.77,
+        "max": 196.77
+      },
+      "memory_metrics": {
+        "ram_baseline_mb": 374.49,
+        "ram_peak_mb": 375.79,
+        "ram_delta_mb": 1.3,
+        "vram_baseline_mb": 0.0,
+        "vram_peak_mb": 0.0,
+        "vram_delta_mb": 0.0
+      }
+    }
+  },
+  "ingestion_vector_benchmark": {
+    "embedding_benchmark": {
+      "documents_count": 10,
+      "duration_sec": 15.1899,
+      "embeddings_per_sec": 0.66,
+      "embedding_dim": 384
+    },
+    "faiss_index_benchmark": {
+      "chunks_indexed": 10,
+      "insertion_duration_sec": 0.4758,
+      "insertion_rate_chunks_per_sec": 21.02,
+      "persistence_duration_sec": 0.0143,
+      "index_path": "C:\\Users\\packi\\AGI-pack\\data_memory\\bench_temp",
+      "total_vectors_in_index": 10
+    },
+    "daemon_cycle_benchmark": {
+      "status": "completed",
+      "harvested_count": 10,
+      "total_cycle_duration_sec": 1.243,
+      "ingestion_rate_records_per_sec": 8.05
+    }
+  }
+}

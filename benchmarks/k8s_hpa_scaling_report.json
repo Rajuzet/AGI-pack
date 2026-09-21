@@ -1,0 +1,219 @@
+{
+  "timestamp": "2026-09-21T17:46:39.950911+00:00",
+  "target_url": "http://127.0.0.1:8000",
+  "server_info": {
+    "status": "healthy",
+    "warmed_up": true,
+    "base_model": "Qwen/Qwen2.5-7B-Instruct",
+    "active_adapter": "latest",
+    "active_adapter_meta": {
+      "gcs_uri": "gs://agi-agent-ingestion-data/models/lora_checkpoints/latest",
+      "reloaded_at": "2026-09-21T13:11:09.227249+00:00",
+      "adapter_model_bytes": 50
+    },
+    "backend": "cpu-fallback",
+    "device": "cpu",
+    "vram_allocated_gb": 0.0,
+    "vram_reserved_gb": 0.0,
+    "timestamp": "2026-09-21T17:46:28.951706+00:00"
+  },
+  "hpa_policy": {
+    "target_concurrency_per_pod": 15,
+    "target_cpu_percentage": 75,
+    "min_replicas": 1,
+    "max_replicas": 8
+  },
+  "overall_summary": {
+    "total_requests_dispatched": 300,
+    "total_successful_requests": 300,
+    "overall_success_rate_pct": 100.0,
+    "average_react_retention_pct": 100.0
+  },
+  "tiers": [
+    {
+      "concurrency": 20,
+      "hpa_scaling": {
+        "initial_replicas": 1,
+        "target_concurrency_per_pod": 15,
+        "calculated_desired_replicas": 2,
+        "scaling_triggered": true,
+        "hpa_formula": "ceil(20 / 15) = 2"
+      },
+      "duration_sec": 0.325,
+      "total_requests": 20,
+      "successful_requests": 20,
+      "failed_requests": 0,
+      "success_rate_pct": 100.0,
+      "react_loop_retention_pct": 100.0,
+      "throughput": {
+        "requests_per_sec": 61.46,
+        "tokens_per_sec": 1684.12,
+        "total_tokens": 548
+      },
+      "latency_sec": {
+        "min": 0.1558,
+        "mean": 0.1922,
+        "p50": 0.1656,
+        "p95": 0.2493,
+        "p99": 0.2522,
+        "max": 0.2522
+      },
+      "ttft_sec": {
+        "min": 0.1558,
+        "mean": 0.1922,
+        "p50": 0.1656,
+        "p95": 0.2493,
+        "p99": 0.2522,
+        "max": 0.2522
+      }
+    },
+    {
+      "concurrency": 40,
+      "hpa_scaling": {
+        "initial_replicas": 1,
+        "target_concurrency_per_pod": 15,
+        "calculated_desired_replicas": 3,
+        "scaling_triggered": true,
+        "hpa_formula": "ceil(40 / 15) = 3"
+      },
+      "duration_sec": 0.832,
+      "total_requests": 40,
+      "successful_requests": 40,
+      "failed_requests": 0,
+      "success_rate_pct": 100.0,
+      "react_loop_retention_pct": 100.0,
+      "throughput": {
+        "requests_per_sec": 48.1,
+        "tokens_per_sec": 1317.86,
+        "total_tokens": 1096
+      },
+      "latency_sec": {
+        "min": 0.2186,
+        "mean": 0.3818,
+        "p50": 0.3926,
+        "p95": 0.4627,
+        "p99": 0.5098,
+        "max": 0.5098
+      },
+      "ttft_sec": {
+        "min": 0.2186,
+        "mean": 0.3818,
+        "p50": 0.3926,
+        "p95": 0.4627,
+        "p99": 0.5098,
+        "max": 0.5098
+      }
+    },
+    {
+      "concurrency": 60,
+      "hpa_scaling": {
+        "initial_replicas": 1,
+        "target_concurrency_per_pod": 15,
+        "calculated_desired_replicas": 4,
+        "scaling_triggered": true,
+        "hpa_formula": "ceil(60 / 15) = 4"
+      },
+      "duration_sec": 1.434,
+      "total_requests": 60,
+      "successful_requests": 60,
+      "failed_requests": 0,
+      "success_rate_pct": 100.0,
+      "react_loop_retention_pct": 100.0,
+      "throughput": {
+        "requests_per_sec": 41.83,
+        "tokens_per_sec": 1146.12,
+        "total_tokens": 1644
+      },
+      "latency_sec": {
+        "min": 0.8772,
+        "mean": 0.9546,
+        "p50": 0.9606,
+        "p95": 1.0063,
+        "p99": 1.0078,
+        "max": 1.0996
+      },
+      "ttft_sec": {
+        "min": 0.8772,
+        "mean": 0.9546,
+        "p50": 0.9606,
+        "p95": 1.0063,
+        "p99": 1.0078,
+        "max": 1.0996
+      }
+    },
+    {
+      "concurrency": 80,
+      "hpa_scaling": {
+        "initial_replicas": 1,
+        "target_concurrency_per_pod": 15,
+        "calculated_desired_replicas": 6,
+        "scaling_triggered": true,
+        "hpa_formula": "ceil(80 / 15) = 6"
+      },
+      "duration_sec": 1.66,
+      "total_requests": 80,
+      "successful_requests": 80,
+      "failed_requests": 0,
+      "success_rate_pct": 100.0,
+      "react_loop_retention_pct": 100.0,
+      "throughput": {
+        "requests_per_sec": 48.19,
+        "tokens_per_sec": 1320.35,
+        "total_tokens": 2192
+      },
+      "latency_sec": {
+        "min": 0.766,
+        "mean": 1.0669,
+        "p50": 1.0652,
+        "p95": 1.1558,
+        "p99": 1.1593,
+        "max": 1.1595
+      },
+      "ttft_sec": {
+        "min": 0.766,
+        "mean": 1.0669,
+        "p50": 1.0652,
+        "p95": 1.1558,
+        "p99": 1.1593,
+        "max": 1.1595
+      }
+    },
+    {
+      "concurrency": 100,
+      "hpa_scaling": {
+        "initial_replicas": 1,
+        "target_concurrency_per_pod": 15,
+        "calculated_desired_replicas": 7,
+        "scaling_triggered": true,
+        "hpa_formula": "ceil(100 / 15) = 7"
+      },
+      "duration_sec": 1.694,
+      "total_requests": 100,
+      "successful_requests": 100,
+      "failed_requests": 0,
+      "success_rate_pct": 100.0,
+      "react_loop_retention_pct": 100.0,
+      "throughput": {
+        "requests_per_sec": 59.02,
+        "tokens_per_sec": 1617.03,
+        "total_tokens": 2740
+      },
+      "latency_sec": {
+        "min": 0.7669,
+        "mean": 1.02,
+        "p50": 1.0599,
+        "p95": 1.2119,
+        "p99": 1.2259,
+        "max": 1.2292
+      },
+      "ttft_sec": {
+        "min": 0.7669,
+        "mean": 1.02,
+        "p50": 1.0599,
+        "p95": 1.2119,
+        "p99": 1.2259,
+        "max": 1.2292
+      }
+    }
+  ]
+}

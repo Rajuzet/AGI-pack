@@ -1,0 +1,258 @@
+{
+  "timestamp": "2026-09-20T09:48:53.269312+00:00",
+  "total_variants_evaluated": 4,
+  "rankings": [
+    {
+      "rank": 1,
+      "variant_name": "Variant C: QLoRA Adapter (Zero-Shot)",
+      "model_type": "Fine-Tuned QLoRA Checkpoint",
+      "reasoning_mode": "Zero-Shot Direct",
+      "metrics": {
+        "total_tasks": 5,
+        "successful_tasks": 5,
+        "tool_invocation_accuracy": 0.0,
+        "step_efficiency": 1.0,
+        "self_correction_rate": 0.0,
+        "semantic_faithfulness": 88.1,
+        "avg_latency_seconds": 0.0,
+        "composite_score": 90.2
+      },
+      "tasks": [
+        {
+          "scenario_id": "TASK-01-RETRIEVAL",
+          "category": "Literature Synthesis",
+          "success": true,
+          "steps": 1,
+          "faithfulness": 71.43,
+          "latency": 0.0,
+          "self_corrected": false
+        },
+        {
+          "scenario_id": "TASK-02-COMPUTATION",
+          "category": "Mathematical Verification",
+          "success": true,
+          "steps": 1,
+          "faithfulness": 85.71,
+          "latency": 0.0,
+          "self_corrected": false
+        },
+        {
+          "scenario_id": "TASK-03-ERROR-RECOVERY",
+          "category": "Resilient Self-Correction",
+          "success": true,
+          "steps": 1,
+          "faithfulness": 100.0,
+          "latency": 0.0,
+          "self_corrected": false
+        },
+        {
+          "scenario_id": "TASK-04-WEB-FACTUAL",
+          "category": "Live Information Retrieval",
+          "success": true,
+          "steps": 1,
+          "faithfulness": 100.0,
+          "latency": 0.0,
+          "self_corrected": false
+        },
+        {
+          "scenario_id": "TASK-05-SQL-AUDITING",
+          "category": "Database Introspection",
+          "success": true,
+          "steps": 1,
+          "faithfulness": 83.33,
+          "latency": 0.0,
+          "self_corrected": false
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "variant_name": "Variant A: Base Model (Zero-Shot)",
+      "model_type": "Base Quantized (4-Bit NF4)",
+      "reasoning_mode": "Zero-Shot Direct",
+      "metrics": {
+        "total_tasks": 5,
+        "successful_tasks": 5,
+        "tool_invocation_accuracy": 0.0,
+        "step_efficiency": 1.0,
+        "self_correction_rate": 0.0,
+        "semantic_faithfulness": 66.9,
+        "avg_latency_seconds": 0.0,
+        "composite_score": 75.3
+      },
+      "tasks": [
+        {
+          "scenario_id": "TASK-01-RETRIEVAL",
+          "category": "Literature Synthesis",
+          "success": true,
+          "steps": 1,
+          "faithfulness": 57.14,
+          "latency": 0.0,
+          "self_corrected": false
+        },
+        {
+          "scenario_id": "TASK-02-COMPUTATION",
+          "category": "Mathematical Verification",
+          "success": true,
+          "steps": 1,
+          "faithfulness": 85.71,
+          "latency": 0.0,
+          "self_corrected": false
+        },
+        {
+          "scenario_id": "TASK-03-ERROR-RECOVERY",
+          "category": "Resilient Self-Correction",
+          "success": true,
+          "steps": 1,
+          "faithfulness": 75.0,
+          "latency": 0.0,
+          "self_corrected": false
+        },
+        {
+          "scenario_id": "TASK-04-WEB-FACTUAL",
+          "category": "Live Information Retrieval",
+          "success": true,
+          "steps": 1,
+          "faithfulness": 66.67,
+          "latency": 0.0,
+          "self_corrected": false
+        },
+        {
+          "scenario_id": "TASK-05-SQL-AUDITING",
+          "category": "Database Introspection",
+          "success": true,
+          "steps": 1,
+          "faithfulness": 50.0,
+          "latency": 0.0,
+          "self_corrected": false
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "variant_name": "Variant D: QLoRA Adapter (ReAct)",
+      "model_type": "Fine-Tuned QLoRA Checkpoint",
+      "reasoning_mode": "Cyclic ReAct",
+      "metrics": {
+        "total_tasks": 5,
+        "successful_tasks": 5,
+        "tool_invocation_accuracy": 100.0,
+        "step_efficiency": 2.0,
+        "self_correction_rate": 100.0,
+        "semantic_faithfulness": 41.0,
+        "avg_latency_seconds": 0.074,
+        "composite_score": 71.9
+      },
+      "tasks": [
+        {
+          "scenario_id": "TASK-01-RETRIEVAL",
+          "category": "Literature Synthesis",
+          "success": true,
+          "steps": 2,
+          "faithfulness": 20.0,
+          "latency": 0.177,
+          "self_corrected": false
+        },
+        {
+          "scenario_id": "TASK-02-COMPUTATION",
+          "category": "Mathematical Verification",
+          "success": true,
+          "steps": 2,
+          "faithfulness": 20.0,
+          "latency": 0.133,
+          "self_corrected": false
+        },
+        {
+          "scenario_id": "TASK-03-ERROR-RECOVERY",
+          "category": "Resilient Self-Correction",
+          "success": true,
+          "steps": 3,
+          "faithfulness": 45.0,
+          "latency": 0.036,
+          "self_corrected": true
+        },
+        {
+          "scenario_id": "TASK-04-WEB-FACTUAL",
+          "category": "Live Information Retrieval",
+          "success": true,
+          "steps": 1,
+          "faithfulness": 66.67,
+          "latency": 0.001,
+          "self_corrected": false
+        },
+        {
+          "scenario_id": "TASK-05-SQL-AUDITING",
+          "category": "Database Introspection",
+          "success": true,
+          "steps": 2,
+          "faithfulness": 53.33,
+          "latency": 0.026,
+          "self_corrected": false
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "variant_name": "Variant B: Base Model (ReAct)",
+      "model_type": "Base Quantized (4-Bit NF4)",
+      "reasoning_mode": "Cyclic ReAct",
+      "metrics": {
+        "total_tasks": 5,
+        "successful_tasks": 5,
+        "tool_invocation_accuracy": 100.0,
+        "step_efficiency": 2.0,
+        "self_correction_rate": 100.0,
+        "semantic_faithfulness": 34.6,
+        "avg_latency_seconds": 6.891,
+        "composite_score": 69.3
+      },
+      "tasks": [
+        {
+          "scenario_id": "TASK-01-RETRIEVAL",
+          "category": "Literature Synthesis",
+          "success": true,
+          "steps": 2,
+          "faithfulness": 12.0,
+          "latency": 0.365,
+          "self_corrected": false
+        },
+        {
+          "scenario_id": "TASK-02-COMPUTATION",
+          "category": "Mathematical Verification",
+          "success": true,
+          "steps": 2,
+          "faithfulness": 12.0,
+          "latency": 0.129,
+          "self_corrected": false
+        },
+        {
+          "scenario_id": "TASK-03-ERROR-RECOVERY",
+          "category": "Resilient Self-Correction",
+          "success": true,
+          "steps": 3,
+          "faithfulness": 37.0,
+          "latency": 33.909,
+          "self_corrected": true
+        },
+        {
+          "scenario_id": "TASK-04-WEB-FACTUAL",
+          "category": "Live Information Retrieval",
+          "success": true,
+          "steps": 1,
+          "faithfulness": 66.67,
+          "latency": 0.0,
+          "self_corrected": false
+        },
+        {
+          "scenario_id": "TASK-05-SQL-AUDITING",
+          "category": "Database Introspection",
+          "success": true,
+          "steps": 2,
+          "faithfulness": 45.33,
+          "latency": 0.05,
+          "self_corrected": false
+        }
+      ]
+    }
+  ]
+}

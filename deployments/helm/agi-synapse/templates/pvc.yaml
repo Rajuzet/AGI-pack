@@ -1,0 +1,19 @@
+{{- if and .Values.daemon.persistence.enabled -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "agi-synapse.fullname" . }}-daemon-pvc
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "agi-synapse.labels" . | nindent 4 }}
+    app.kubernetes.io/component: daemon
+spec:
+  accessModes:
+    - {{ .Values.daemon.persistence.accessMode | quote }}
+  {{- if .Values.daemon.persistence.storageClass }}
+  storageClassName: {{ .Values.daemon.persistence.storageClass | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.daemon.persistence.size | quote }}
+{{- end }}

@@ -1,0 +1,120 @@
+version: "3.8"
+
+services:
+  # ===========================================================================
+  # 1. Relational Audit Storage (MySQL 8.0)
+  # Pre-configured and initialized with storage/schema.sql
+  # ===========================================================================
+  agi-mysql:
+    image: mysql:8.0
+    container_name: agi-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-agi_root_secure}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-agi_memory}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - ../storage/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+
+  # ===========================================================================
+  # 2. Production Model Serving Microservice (FastAPI + CUDA / vLLM / PEFT)
+  # Exposes port 8000 for OpenAI-compatible chat completions and GCS adapter reload
+  # ===========================================================================
+  agi-serving:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    container_name: agi-serving
+    restart: unless-stopped
+    environment:
+      SERVING_HOST: 0.0.0.0
+      SERVING_PORT: 8000
+      SERVING_MODEL_ID: ${SERVING_MODEL_ID:-Qwen/Qwen2.5-7B-Instruct}
+      SERVING_GCS_ADAPTER_PREFIX: ${SERVING_GCS_ADAPTER_PREFIX:-models/lora_checkpoints/latest}
+      GCS_BUCKET_NAME: ${GCS_BUCKET_NAME:-agi-agent-ingestion-data}
+      GCS_CREDENTIALS_PATH: ${GCS_CREDENTIALS_PATH:-}
+      MYSQL_HOST: agi-mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-agi_root_secure}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-agi_memory}
+    ports:
+      - "8000:8000"
+    volumes:
+      - data_staging:/app/data_staging
+      - data_memory:/app/data_memory
+    depends_on:
+      agi-mysql:
+        condition: service_healthy
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # ===========================================================================
+  # 3. Continuous Data Harvesting & Vectorization Daemon
+  # Periodically harvests ArXiv/RSS, deduplicates against MySQL, indexes to FAISS
+  # ===========================================================================
+  agi-daemon:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    container_name: agi-daemon
+    restart: unless-stopped
+    command: ["python3", "-m", "daemon.continuous_ingest", "--metrics-port", "9090", "--poll-interval", "300"]
+    ports:
+      - "9090:9090"
+    environment:
+      DAEMON_POLL_INTERVAL: ${DAEMON_POLL_INTERVAL:-300}
+      DAEMON_MAX_RECORDS_PER_POLL: ${DAEMON_MAX_RECORDS_PER_POLL:-15}
+      GCS_BUCKET_NAME: ${GCS_BUCKET_NAME:-agi-agent-ingestion-data}
+      GCS_CREDENTIALS_PATH: ${GCS_CREDENTIALS_PATH:-}
+      MYSQL_HOST: agi-mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-agi_root_secure}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-agi_memory}
+    volumes:
+      - data_staging:/app/data_staging
+      - data_memory:/app/data_memory
+    depends_on:
+      agi-mysql:
+        condition: service_healthy
+
+  # ===========================================================================
+  # 4. Observability & Telemetry Service (Prometheus)
+  # Scrapes agi-serving (/metrics) and agi-daemon (:9090/metrics)
+  # ===========================================================================
+  agi-prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: agi-prometheus
+    restart: unless-stopped
+    ports:
+      - "${PROMETHEUS_PORT:-9091}:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      - agi-serving
+      - agi-daemon
+
+volumes:
+  mysql_data:
+    driver: local
+  data_staging:
+    driver: local
+  data_memory:
+    driver: local
+  prometheus_data:
+    driver: local

@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "agi-synapse.fullname" . }}-daemon
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "agi-synapse.labels" . | nindent 4 }}
+    app.kubernetes.io/component: daemon
+spec:
+  replicas: {{ .Values.daemon.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "agi-synapse.daemonSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "agi-synapse.daemonSelectorLabels" . | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9090"
+    spec:
+      serviceAccountName: {{ include "agi-synapse.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.securityContext | nindent 8 }}
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: agi-daemon
+          image: "{{ .Values.daemon.image.repository }}:{{ .Values.daemon.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.daemon.image.pullPolicy }}
+          command:
+            - "python"
+            - "daemon/continuous_ingest.py"
+          ports:
+            - name: metrics-daemon
+              containerPort: {{ .Values.daemon.metricsPort }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "agi-synapse.fullname" . }}-config
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mysql.existingSecret | default (printf "%s-secret" (include "agi-synapse.fullname" .)) }}
+                  key: {{ .Values.mysql.secretKeys.passwordKey | default "mysql-root-password" }}
+          livenessProbe:
+            tcpSocket:
+              port: metrics-daemon
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: metrics-daemon
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 2
+          resources:
+            {{- toYaml .Values.daemon.resources | nindent 12 }}
+          volumeMounts:
+            {{- if .Values.daemon.persistence.enabled }}
+            - name: daemon-storage
+              mountPath: {{ .Values.daemon.persistence.mountPath }}
+            {{- end }}
+      volumes:
+        {{- if .Values.daemon.persistence.enabled }}
+        - name: daemon-storage
+          persistentVolumeClaim:
+            claimName: {{ include "agi-synapse.fullname" . }}-daemon-pvc
+        {{- end }}
