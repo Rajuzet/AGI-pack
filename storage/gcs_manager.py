@@ -619,9 +619,9 @@ class GCSManager:
             return summary
 
         # Remote GCS sync
-        uploaded_files: List[str] = []
-        skipped_files: List[str] = []
-        failed_files: List[Dict[str, str]] = []
+        uploaded_files = []
+        skipped_files = []
+        failed_files = []
         total_bytes = 0
 
         logger.info("Starting sync from '%s' to gs://%s/%s", base_dir, self.bucket_name, prefix)

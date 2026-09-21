@@ -185,6 +185,7 @@ class ExecutorAgent:
         for step in plan.steps:
             if step.target_tool and step.target_tool in self.tools._tools:
                 tool_name = step.target_tool
+                tool_input: Dict[str, Any] = {}
 
                 # Format appropriate inputs for known tools
                 if tool_name == "execute_python_code":
