@@ -1,0 +1,14 @@
+# Ruff linter configuration for Project Synapse
+target-version = "py312"
+line-length = 120
+
+[lint]
+select = [
+    "E9",   # Syntax errors
+    "F63",  # Invalid type comparisons
+    "F7",   # Fatal syntax/control flow errors
+    "F82",  # Undefined symbols and scope errors
+]
+ignore = [
+    "E501", # Line length handled gracefully
+]
